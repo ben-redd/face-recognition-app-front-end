@@ -1,0 +1,9 @@
+.Tilt {
+  background: linear-gradient(to bottom right, #33a5a5, #247575);
+  height: 100px;
+  width: 100px;
+}
+
+image {
+  margin: auto;
+}
