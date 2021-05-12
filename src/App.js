@@ -17,7 +17,7 @@ const particleOptions = particleParams;
 const initialState = {
   input: '',
   imageUrl: '',
-  box: {},
+  box: [],
   route: 'signin',
   isSignedIn: false,
   user: {
@@ -48,21 +48,24 @@ class App extends React.Component {
     });
   };
 
-  //calculates the location of where the lines of the bounding box that will outline an image on a face should be
+  //calculates the location of where the lines of the bounding boxes that will outline the faces in an image will be
   calculateFaceLocation = (data) => {
-    const boundingBox =
-      data.outputs[0].data.regions[0].region_info.bounding_box;
-    console.log(data.outputs[0].data.regions.length);
+    const numFaces = data.outputs[0].data.regions.length;
     const image = document.getElementById('inputImage');
     const width = Number(image.width);
     const height = Number(image.height);
-
-    return {
-      leftCol: boundingBox.left_col * width,
-      topRow: boundingBox.top_row * height,
-      rightCol: width - boundingBox.right_col * width,
-      bottomRow: height - boundingBox.bottom_row * height,
-    };
+    const boxArr = []; //array of the box locations to outline faces
+    for (let i = 0; i < numFaces; i++) {
+      let boundingBox =
+        data.outputs[0].data.regions[i].region_info.bounding_box;
+      boxArr.push({
+        leftCol: boundingBox.left_col * width,
+        topRow: boundingBox.top_row * height,
+        rightCol: width - boundingBox.right_col * width,
+        bottomRow: height - boundingBox.bottom_row * height,
+      });
+    }
+    return boxArr;
   };
 
   //sets the state of box to be whatever was returned by calculateFaceLocation
