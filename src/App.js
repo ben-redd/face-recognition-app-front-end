@@ -1,5 +1,4 @@
 import React from 'react';
-import Clarifai from 'clarifai';
 import Particles from 'react-particles-js';
 import SignIn from './components/SignIn/SignIn.component';
 import Register from './components/Register/Register.component';
@@ -9,54 +8,51 @@ import Rank from './components/Rank/Rank.component';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm.component';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition.component';
 import './App.css';
+import particleParams from './particleParams';
 
-//sets up the Clarifai API with my API key
-const app = new Clarifai.App({
-  apiKey: '5ba32d8a737c4dee81a73c846b8d8d22',
-});
+//parameters for the npm package react-particles-js used as a background component
+const particleOptions = particleParams;
 
-//parameters for the react-particles-js background component
-const particleOptions = {
-  particles: {
-    number: {
-      value: 50,
-      density: {
-        enable: true,
-        value_area: 1200,
-      },
-    },
-    line_linked: {
-      enable: true,
-      opacity: 0.3,
-    },
-    move: {
-      random: true,
-      speed: 1.5,
-      out_mode: 'out',
-    },
-    size: {
-      value: 1,
-    },
+//sets up the initial state outside of the class in order to make clearing the state between users easier
+const initialState = {
+  input: '',
+  imageUrl: '',
+  box: {},
+  route: 'signin',
+  isSignedIn: false,
+  user: {
+    id: '',
+    name: '',
+    email: '',
+    entries: 0,
+    joinDate: '',
   },
-  retina_detect: true,
 };
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      input: '',
-      imageUrl: '',
-      box: {},
-      route: 'signin',
-      isSignedIn: false,
-    };
+    this.state = initialState;
   }
+
+  //used to load user information when signing in or registering
+  loadUser = (data) => {
+    this.setState({
+      user: {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        entries: data.entries,
+        joinDate: data.joinDate,
+      },
+    });
+  };
 
   //calculates the location of where the lines of the bounding box that will outline an image on a face should be
   calculateFaceLocation = (data) => {
     const boundingBox =
       data.outputs[0].data.regions[0].region_info.bounding_box;
+    console.log(data.outputs[0].data.regions.length);
     const image = document.getElementById('inputImage');
     const width = Number(image.width);
     const height = Number(image.height);
@@ -80,21 +76,43 @@ class App extends React.Component {
   };
 
   //when the Detect button is pressed the imageUrl state is updated so that the image is shown.
-  //The image is then sent as a request to the Clarifai API and we can then receive a response
+  //The image is then sent as a request to the Clarifai API and we can then receive a response with information regarding face location
   onButtonSubmit = () => {
     this.setState({ imageUrl: this.state.input });
-    app.models
-      .predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-      .then((response) =>
-        this.displayBoundingBox(this.calculateFaceLocation(response)),
-      )
+    fetch('http://localhost:3000/imageurl', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input: this.state.input,
+      }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        if (response) {
+          fetch('http://localhost:3000/image', {
+            method: 'put',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: this.state.user.id,
+            }),
+          })
+            .then((response) => response.json())
+            .then((count) => {
+              //updates the state of entries
+              this.setState(Object.assign(this.state.user, { entries: count }));
+            })
+            .catch(console.log);
+        }
+        //updates the state of box to reflect the bounding box data recieved from Clarifai
+        this.displayBoundingBox(this.calculateFaceLocation(response));
+      })
       .catch((err) => console.log(err));
   };
 
   //changes the state of route
   onRouteChange = (route) => {
     if (route === 'signin') {
-      this.setState({ isSignedIn: false });
+      this.setState(initialState);
     } else if (route === 'home') {
       this.setState({ isSignedIn: true });
     }
@@ -112,7 +130,10 @@ class App extends React.Component {
         {this.state.route === 'home' ? (
           <div>
             <Logo />
-            <Rank />
+            <Rank
+              name={this.state.user.name}
+              entries={this.state.user.entries}
+            />
             <ImageLinkForm
               onInputChange={this.onInputChange}
               onButtonSubmit={this.onButtonSubmit}
@@ -123,9 +144,12 @@ class App extends React.Component {
             />
           </div>
         ) : this.state.route === 'signin' ? (
-          <SignIn onRouteChange={this.onRouteChange} />
+          <SignIn onRouteChange={this.onRouteChange} loadUser={this.loadUser} />
         ) : (
-          <Register onRouteChange={this.onRouteChange} />
+          <Register
+            onRouteChange={this.onRouteChange}
+            loadUser={this.loadUser}
+          />
         )}
       </div>
     );
