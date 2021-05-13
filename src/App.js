@@ -82,6 +82,7 @@ class App extends React.Component {
   //The image is then sent as a request to the Clarifai API and we can then receive a response with information regarding face location
   onButtonSubmit = () => {
     this.setState({ imageUrl: this.state.input });
+    //fetches from backend where an api call is made using the image url
     fetch('http://localhost:3000/imageurl', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
@@ -92,6 +93,7 @@ class App extends React.Component {
       .then((response) => response.json())
       .then((response) => {
         if (response) {
+          //if a response is received from the clarifai api, another call is made to our backend to increment the entry count
           fetch('http://localhost:3000/image', {
             method: 'put',
             headers: { 'Content-Type': 'application/json' },
@@ -106,7 +108,7 @@ class App extends React.Component {
             })
             .catch(console.log);
         }
-        //updates the state of box to reflect the bounding box data recieved from Clarifai
+        //updates the state of "box" to reflect the bounding box data recieved from Clarifai
         this.displayBoundingBox(this.calculateFaceLocation(response));
       })
       .catch((err) => console.log(err));

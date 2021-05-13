@@ -3,6 +3,7 @@ import Tilt from 'react-tilt';
 import './Logo.css';
 import brain from './brain-image.png';
 
+//adds an interactive logo using a library from https://www.npmjs.com/package/react-tilt
 const Logo = () => {
   return (
     <div className="mh5 mv2">

@@ -12,6 +12,7 @@ const FaceRecognition = ({ imageUrl, box }) => {
           height="auto"
         />
 
+        {/* maps over, and applies all of the bounding boxes for all of the different faces in an image */}
         {box.map((box, index) => (
           <div
             key={index}
@@ -30,15 +31,3 @@ const FaceRecognition = ({ imageUrl, box }) => {
 };
 
 export default FaceRecognition;
-
-// {box.map((box, index) => (
-//       <div key={index}>
-//        className="bounding-box"
-//         style={{
-//           top: box.topRow,
-//           right: box.rightCol,
-//           bottom: box.bottomRow,
-//           left: box.leftCol,
-//         }}
-//       </div>
-//     ))}
