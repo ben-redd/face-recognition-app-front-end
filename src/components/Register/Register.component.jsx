@@ -19,7 +19,7 @@ class Register extends React.Component {
     this.setState({ name: event.target.value });
   };
   onSubmitRegister = (event) => {
-    fetch('http://localhost:3000/register', {
+    fetch('https://nameless-beach-98461.herokuapp.com/register', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

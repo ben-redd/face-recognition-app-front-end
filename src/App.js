@@ -82,8 +82,8 @@ class App extends React.Component {
   //The image is then sent as a request to the Clarifai API and we can then receive a response with information regarding face location
   onButtonSubmit = () => {
     this.setState({ imageUrl: this.state.input });
-    //fetches from backend where an api call is made using the image url
-    fetch('http://localhost:3000/imageurl', {
+    //fetch from backend where an api call is made using the image url
+    fetch('https://nameless-beach-98461.herokuapp.com/imageurl', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -94,7 +94,7 @@ class App extends React.Component {
       .then((response) => {
         if (response) {
           //if a response is received from the clarifai api, another call is made to our backend to increment the entry count
-          fetch('http://localhost:3000/image', {
+          fetch('https://nameless-beach-98461.herokuapp.com/image', {
             method: 'put',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
